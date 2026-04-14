@@ -3,7 +3,7 @@
 # Tests for book-generator
 
 @test "generate_book.sh exists and is executable" {
-    [ -x "./generate_book.sh" ]
+    [ -x "./scripts/generate_book.sh" ]
 }
 
 @test "pandoc is available" {
@@ -29,7 +29,7 @@
 }
 
 @test "script has proper shebang" {
-    head -1 generate_book.sh | grep -q "#!/bin/bash"
+    head -1 scripts/generate_book.sh | grep -q "#!/bin/bash"
 }
 
 @test "required tools check" {

@@ -11,8 +11,8 @@ echo "  Automated Technical Documentation"
 echo "======================================="
 echo ""
 
-if [ ! -f "./generate_book.sh" ]; then
-    echo "❌ generate_book.sh not found in current directory"
+if [ ! -f "./scripts/generate_book.sh" ]; then
+    echo "❌ scripts/generate_book.sh not found — is this the book-generator repo root?"
     exit 1
 fi
 

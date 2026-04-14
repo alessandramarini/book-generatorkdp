@@ -165,13 +165,26 @@ function smart_api_call() {
     local fallback_models=("llama3:8b" "llama3.2:1b" "llama3:latest" "gemma:7b" "tinyllama:latest" "mixtral:latest" "llama2:latest")
     
     # If model is specified, use it first, otherwise try default models
-    # if [ -n "$model" ]; then
-    #     echo "🤖 Using specified model: $model" >&2
-    #     # call_ollama_api expects: prompt, system_prompt, task_type, temperature, max_tokens, model_name
-    #     if call_ollama_api "$prompt" "$system_prompt" "$task_type" "$temperature" "$max_tokens" "$max_retries" "$model"; then
-    #         success=true
-    #     fi
-    # fi
+    if [ -n "$model" ]; then
+        echo "🤖 Using specified model: $model" >&2
+        if [[ "$model" == gemini-* ]]; then
+            # Pin Gemini to this exact model by temporarily overriding the model array
+            local _old_gemini_models=("${GEMINI_MODELS[@]}")
+            local _old_gemini_index=$GEMINI_MODEL_INDEX
+            GEMINI_MODELS=("${model}:60")
+            GEMINI_MODEL_INDEX=0
+            if call_gemini_api "$prompt" "$system_prompt" "$temperature" "$max_tokens"; then
+                success=true
+            fi
+            GEMINI_MODELS=("${_old_gemini_models[@]}")
+            GEMINI_MODEL_INDEX=$_old_gemini_index
+        else
+            if call_ollama_api "$prompt" "$system_prompt" "$task_type" \
+                    "$temperature" "$max_tokens" "$max_retries" "$model"; then
+                success=true
+            fi
+        fi
+    fi
 
     if [ -n "$GEMINI_API_KEY" ]; then
         echo "🔄 Trying Gemini API (attempt $current_attempt/$max_retries)" >&2

@@ -25,116 +25,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Author community platform
 - AI-powered reader feedback analysis
 
+## [1.1.0] - 2025-01-01
+
+### Phase 1: Foundation Fixes
+
+#### Added
+- `scripts/generate_book.sh` — master orchestrator chaining the full 6-step pipeline
+  (outline → chapters → appendices → references → plagiarism check → compile)
+- `requirements.txt` — runtime Python dependencies (`requests`, `beautifulsoup4`)
+- `.env.example` — template for API keys and optional defaults
+
+#### Fixed
+- Model override (`--model` / `-m` flag) was silently ignored; now correctly pins Gemini
+  models via temp `GEMINI_MODELS` override and Ollama models via direct API call
+  (`scripts/multi_provider_ai_simple.sh`)
+- Removed ~70 lines of unreachable dead code in `generate_book_cover()` that followed
+  an early `return 0` (`scripts/compile_book.sh`)
+- `demo.sh` existence check pointed to `./generate_book.sh`; corrected to
+  `./scripts/generate_book.sh`
+- Two BATS tests in `tests/generator.bats` pointed to `./generate_book.sh`; corrected
+  to `./scripts/generate_book.sh`
+
 ## [1.0.0] - 2024-12-15
 
 ### 🎉 Proof-of-Concept Complete
 
-Book Generator has successfully demonstrated feasibility by producing **2 published books on Amazon KDP**!
+Book Generator has successfully demonstrated feasibility by producing **books on Amazon KDP**
+using a fully Bash-based pipeline driven by multi-provider AI (Gemini, Groq, Ollama).
 
 ### Achievements
 
-**Published Books:**
-1. **"AI-Powered Financial Freedom"** - Personal finance guide using AI
-2. **"The Digital Nomad's Handbook"** - Remote work and travel guide
+**Published Books (v3/ pipeline):**
+- Full-length manuscripts (50,000+ words) generated end-to-end via shell scripts
+- Amazon KDP formatting compliance
+- Cover design integrated via ImageMagick (`generate_book_cover()`)
+- Metadata and keyword optimization workflow
 
 **Validation:**
-- ✅ Full manuscript generation (50,000+ words each)
-- ✅ Chapter structure and organization
-- ✅ Amazon KDP formatting compliance
-- ✅ Cover design integration
-- ✅ Metadata and keyword optimization
-- ✅ Live on Amazon marketplace
+- ✅ Full manuscript generation
+- ✅ Chapter structure and organisation
+- ✅ PDF, EPUB, HTML, MOBI output via Pandoc + ImageMagick
+- ✅ Multi-provider AI fallback (Gemini → Groq → Ollama)
+- ✅ Plagiarism detection pass per chapter
 
-### Features
+### Core Scripts
 
-#### Core Pipeline
-- **AI Content Generation** - Claude/GPT-4 integration for chapter writing
-- **Outline Creation** - Structured book planning with hierarchical chapters
-- **Content Refinement** - Multi-pass editing and improvement
-- **Format Export** - PDF, EPUB, MOBI generation
-- **Metadata Management** - Title, author, description, keywords, categories
+| Script | Purpose |
+|--------|---------|
+| `scripts/generate_book.sh` | Master orchestrator — full pipeline in one command |
+| `scripts/multi_provider_ai_simple.sh` | AI provider abstraction + all generation functions |
+| `scripts/compile_book.sh` | Assembles chapters → PDF / EPUB / HTML / MOBI |
+| `scripts/generate_appendices.sh` | AI-generated appendices (requires `GEMINI_API_KEY`) |
+| `scripts/generate_references.sh` | AI-generated bibliography (requires `GEMINI_API_KEY`) |
+| `scripts/generate_covers.sh` | Standalone cover generation utility |
+| `scripts/kdp_topic_finder.sh` | KDP market research and topic discovery |
+| `scripts/plagiarism_report_manager.sh` | Plagiarism report utilities |
 
-#### Scripts
-- `scripts/generate_outline.py` - Create book structure from topic
-- `scripts/generate_chapter.py` - Generate individual chapters
-- `scripts/compile_book.py` - Assemble chapters into complete manuscript
-- `scripts/format_kdp.py` - Format for Amazon KDP requirements
-- `scripts/export.py` - Multi-format export utilities
+### AI Provider Priority
 
-#### Quality Control
-- Word count tracking per chapter and book
-- Consistency checking across chapters
-- Style guide enforcement
-- Formatting validation
-
-### Lessons Learned
-
-**What Worked:**
-- AI excels at generating structured, informative content
-- Chapter-by-chapter generation allows quality control
-- Iterative refinement produces publication-quality prose
-- Automation saves 100+ hours per book
-
-**Challenges:**
-- Maintaining consistent voice across chapters requires careful prompting
-- Fact-checking AI-generated content is essential
-- Human editing still necessary for final polish
-- Cover design requires separate creative process
-
-**Best Practices:**
-- Start with detailed outline (10-15 chapters minimum)
-- Generate 3-5 drafts per chapter, pick best
-- Use specific personas/voices in prompts for consistency
-- Include examples and anecdotes for engagement
-- Budget 40-60 hours for editing and refinement
+1. **Gemini** (if `GEMINI_API_KEY` set) — primary provider, model rotation via `GEMINI_MODELS` array
+2. **Ollama** — local fallback, model array with priority order
+3. **Groq** — cloud fallback
 
 ### Known Limitations
 
-1. **Manual Editing Required** - AI generates drafts, not final copy
-2. **No Built-in Editing UI** - Uses external text editors
-3. **Cover Design External** - Requires separate design tools
-4. **KDP Upload Manual** - No API integration yet
-5. **Single Author Focus** - Not designed for collaborative authoring
+1. **Human Editing Required** — AI generates high-quality drafts; final polish is manual
+2. **Cover Design via ImageMagick** — B&W programmatic covers; AI image covers require `OPENAI_API_KEY`
+3. **KDP Upload Manual** — no API integration yet
+4. **Appendices/References** require Gemini API key (Ollama path not implemented)
 
-### Technical Details
+### Technical Dependencies
 
-**Dependencies:**
-- Python 3.9+
-- OpenAI API / Anthropic Claude API
-- Markdown processing libraries
-- PDF generation tools (WeasyPrint/ReportLab)
-
-**Cost Per Book:**
-- API costs: $50-150 (depending on model and iterations)
-- Editing time: 40-60 hours
-- Cover design: $50-200 (external designer)
-- Total: ~$100-350 + time investment
+- Bash 4+ (macOS: `brew install bash`)
+- Pandoc (PDF/EPUB/HTML/MOBI compilation)
+- ImageMagick (cover generation)
+- `jq` (JSON parsing for AI responses)
+- Python 3.9+ with `requests`, `beautifulsoup4` (optional tooling)
+- At least one AI provider key or local Ollama running
 
 ## [0.3.0] - 2024-10-01
 
 ### Added
-- Multi-format export (PDF, EPUB, MOBI)
+- Multi-format export (PDF, EPUB, MOBI) via Pandoc
 - Amazon KDP formatting utilities
-- Metadata management system
-- Cover image integration
+- Cover image generation via ImageMagick
 
 ### Changed
 - Improved chapter generation prompts for better consistency
-- Enhanced outline structure with subsections
+- Enhanced outline structure with hierarchical chapters
 - Better error handling in pipeline scripts
 
 ## [0.2.0] - 2024-08-15
 
 ### Added
 - Chapter-by-chapter generation workflow
-- Content refinement scripts
-- Word count tracking
-- Style consistency checking
+- Multi-provider AI fallback (Gemini → Ollama)
+- Word count tracking per chapter
+- Plagiarism check integration
 
 ### Fixed
-- API rate limiting issues
-- Memory usage in long manuscripts
-- Chapter ordering bugs
+- API rate limiting with exponential backoff
+- Chapter ordering and accumulation logic
 
 ## [0.1.0] - 2024-06-01
 
